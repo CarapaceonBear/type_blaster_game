@@ -16,6 +16,9 @@ onready var scoreBox = $Control/Score_Box
 enum gameStates {START, PLAYING, END}
 var currentState = gameStates.START
 onready var endScreen = $End_screen
+var lives = 3
+onready var livesBox = $Control/Lives_Box
+var i_frames = false
 
 func _ready():
 	endScreen.visible = false
@@ -34,6 +37,7 @@ func _process(delta):
 	var inputString = array_to_string(input)
 	inputBox.text = inputString
 	scoreBox.text = str(score)
+	livesBox.text = str(lives)
 
 func _input(event):
 	if currentState == gameStates.PLAYING:
@@ -96,8 +100,6 @@ func _input(event):
 			check_words(inputString)
 			input.clear()
 		elif event.is_action_pressed("escape"):
-			timer.stop()
-			currentState = gameStates.END
 			show_end_screen()
 
 func array_to_string(array):
@@ -146,11 +148,24 @@ func _on_MenuButton_pressed():
 	currentState = gameStates.PLAYING
 
 func show_end_screen():
+	timer.stop()
+	currentState = gameStates.END
 	endScreen.visible = true
 	$End_screen/Final_Score.text = str(score)
 
 func _on_Restart_Button_pressed():
 	endScreen.visible = false
 	score = 0
+	lives = 3
 	cycle()
 	currentState = gameStates.PLAYING
+
+func _on_Area2D_body_entered(body):
+	if not i_frames:
+		i_frames = true
+		if lives > 0:
+			lives -= 1
+		if lives == 0:
+			show_end_screen()
+		yield(get_tree().create_timer(1), "timeout")
+		i_frames = false

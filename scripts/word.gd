@@ -30,6 +30,7 @@ func check_word(check):
 		var letters = get_children()
 		for letter in letters:
 			letter.get_node("Label").self_modulate = Color(1,0,0)
+			letter.get_node("CollisionShape2D").disabled = true
 			var randomForce = Vector2(rng.randf_range(-100, 100), rng.randf_range(-400, 0))
 			letter.apply_central_impulse(randomForce)
 		emit_signal("change_score", 20)
