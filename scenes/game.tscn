@@ -1,11 +1,7 @@
-[gd_scene load_steps=4 format=2]
+[gd_scene load_steps=3 format=2]
 
 [ext_resource path="res://scripts/game.gd" type="Script" id=1]
-[ext_resource path="res://IBMPlexMono-Regular.ttf" type="DynamicFontData" id=2]
-
-[sub_resource type="DynamicFont" id=1]
-size = 48
-font_data = ExtResource( 2 )
+[ext_resource path="res://ui_font.tres" type="DynamicFont" id=2]
 
 [node name="Node2D" type="Node2D"]
 script = ExtResource( 1 )
@@ -20,13 +16,13 @@ __meta__ = {
 }
 
 [node name="Spawn_01" type="Position2D" parent="."]
-position = Vector2( 373, -26 )
+position = Vector2( 279, -42 )
 
 [node name="Spawn_02" type="Position2D" parent="."]
-position = Vector2( 819, -30 )
+position = Vector2( 641, -38 )
 
 [node name="Spawn_03" type="Position2D" parent="."]
-position = Vector2( 1247, -30 )
+position = Vector2( 1029, -34 )
 
 [node name="Word_Handler" type="Node2D" parent="."]
 
@@ -38,13 +34,69 @@ __meta__ = {
 }
 
 [node name="Input_Box" type="Label" parent="Control"]
-margin_left = 700.0
-margin_top = 406.0
-margin_right = 1019.0
-margin_bottom = 470.0
-custom_fonts/font = SubResource( 1 )
+margin_left = 484.0
+margin_top = 618.0
+margin_right = 803.0
+margin_bottom = 682.0
+custom_fonts/font = ExtResource( 2 )
 text = "placeholder"
 align = 1
 __meta__ = {
 "_edit_use_anchors_": false
 }
+
+[node name="Score_Box" type="Label" parent="Control"]
+margin_left = 12.0
+margin_top = 12.0
+margin_right = 68.0
+margin_bottom = 76.0
+custom_fonts/font = ExtResource( 2 )
+text = "0"
+
+[node name="MenuButton" type="MenuButton" parent="Control"]
+margin_left = 568.0
+margin_top = 320.0
+margin_right = 725.0
+margin_bottom = 390.0
+custom_fonts/font = ExtResource( 2 )
+text = "Start"
+
+[node name="Timer" type="Timer" parent="."]
+wait_time = 2.0
+
+[node name="End_screen" type="Control" parent="."]
+margin_right = 40.0
+margin_bottom = 40.0
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Label" type="Label" parent="End_screen"]
+margin_left = 564.0
+margin_top = 266.0
+margin_right = 738.0
+margin_bottom = 330.0
+custom_fonts/font = ExtResource( 2 )
+text = "Score:"
+align = 1
+
+[node name="Final_Score" type="Label" parent="End_screen"]
+margin_left = 606.0
+margin_top = 330.0
+margin_right = 693.0
+margin_bottom = 394.0
+custom_fonts/font = ExtResource( 2 )
+text = "000"
+align = 1
+
+[node name="Restart_Button" type="MenuButton" parent="End_screen"]
+margin_left = 538.0
+margin_top = 454.0
+margin_right = 753.0
+margin_bottom = 524.0
+custom_fonts/font = ExtResource( 2 )
+text = "Restart"
+
+[connection signal="pressed" from="Control/MenuButton" to="." method="_on_MenuButton_pressed"]
+[connection signal="timeout" from="Timer" to="." method="_on_Timer_timeout"]
+[connection signal="pressed" from="End_screen/Restart_Button" to="." method="_on_Restart_Button_pressed"]

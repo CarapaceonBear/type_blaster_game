@@ -7,82 +7,98 @@ onready var spawn2 = $Spawn_02
 onready var spawn3 = $Spawn_03
 onready var wordFile = "res://word_lists/wordlist.10000.txt"
 var wordArray = []
-var cycle_time = 3
+onready var timer = $Timer
+var cycle_time = 2
 onready var inputBox = $Control/Input_Box
 var input = []
+var score = 0
+onready var scoreBox = $Control/Score_Box
+enum gameStates {START, PLAYING, END}
+var currentState = gameStates.START
+onready var endScreen = $End_screen
 
 func _ready():
+	endScreen.visible = false
 	rng.randomize()
 	load_file(wordFile)
-	var selectedWord = pick_random(wordArray)
-	spawn_word(selectedWord)
 
 func cycle():
-	pass
+	timer.wait_time = cycle_time
+	timer.start()
+
+func _on_Timer_timeout():
+	var selectedWord = pick_random(wordArray)
+	spawn_word(selectedWord)
 
 func _process(delta):
 	var inputString = array_to_string(input)
 	inputBox.text = inputString
+	scoreBox.text = str(score)
 
 func _input(event):
-	if event.is_action_pressed("a"):
-		input.append("a")
-	elif event.is_action_pressed("b"):
-		input.append("b")
-	elif event.is_action_pressed("c"):
-		input.append("c")
-	elif event.is_action_pressed("d"):
-		input.append("d")
-	elif event.is_action_pressed("e"):
-		input.append("e")
-	elif event.is_action_pressed("f"):
-		input.append("f")
-	elif event.is_action_pressed("g"):
-		input.append("g")
-	elif event.is_action_pressed("h"):
-		input.append("h")
-	elif event.is_action_pressed("i"):
-		input.append("i")
-	elif event.is_action_pressed("j"):
-		input.append("j")
-	elif event.is_action_pressed("k"):
-		input.append("k")
-	elif event.is_action_pressed("l"):
-		input.append("l")
-	elif event.is_action_pressed("m"):
-		input.append("m")
-	elif event.is_action_pressed("n"):
-		input.append("n")
-	elif event.is_action_pressed("o"):
-		input.append("o")
-	elif event.is_action_pressed("p"):
-		input.append("p")
-	elif event.is_action_pressed("q"):
-		input.append("q")
-	elif event.is_action_pressed("r"):
-		input.append("r")
-	elif event.is_action_pressed("s"):
-		input.append("s")
-	elif event.is_action_pressed("t"):
-		input.append("t")
-	elif event.is_action_pressed("u"):
-		input.append("u")
-	elif event.is_action_pressed("v"):
-		input.append("v")
-	elif event.is_action_pressed("w"):
-		input.append("w")
-	elif event.is_action_pressed("x"):
-		input.append("x")
-	elif event.is_action_pressed("y"):
-		input.append("y")
-	elif event.is_action_pressed("z"):
-		input.append("z")
-	elif event.is_action_pressed("backspace"):
-		input.remove(input.size() - 1)
-	elif event.is_action_pressed("enter"):
-		var inputString = array_to_string(input)
-		check_words(inputString)
-		input.clear()
+	if currentState == gameStates.PLAYING:
+		if event.is_action_pressed("a"):
+			input.append("a")
+		elif event.is_action_pressed("b"):
+			input.append("b")
+		elif event.is_action_pressed("c"):
+			input.append("c")
+		elif event.is_action_pressed("d"):
+			input.append("d")
+		elif event.is_action_pressed("e"):
+			input.append("e")
+		elif event.is_action_pressed("f"):
+			input.append("f")
+		elif event.is_action_pressed("g"):
+			input.append("g")
+		elif event.is_action_pressed("h"):
+			input.append("h")
+		elif event.is_action_pressed("i"):
+			input.append("i")
+		elif event.is_action_pressed("j"):
+			input.append("j")
+		elif event.is_action_pressed("k"):
+			input.append("k")
+		elif event.is_action_pressed("l"):
+			input.append("l")
+		elif event.is_action_pressed("m"):
+			input.append("m")
+		elif event.is_action_pressed("n"):
+			input.append("n")
+		elif event.is_action_pressed("o"):
+			input.append("o")
+		elif event.is_action_pressed("p"):
+			input.append("p")
+		elif event.is_action_pressed("q"):
+			input.append("q")
+		elif event.is_action_pressed("r"):
+			input.append("r")
+		elif event.is_action_pressed("s"):
+			input.append("s")
+		elif event.is_action_pressed("t"):
+			input.append("t")
+		elif event.is_action_pressed("u"):
+			input.append("u")
+		elif event.is_action_pressed("v"):
+			input.append("v")
+		elif event.is_action_pressed("w"):
+			input.append("w")
+		elif event.is_action_pressed("x"):
+			input.append("x")
+		elif event.is_action_pressed("y"):
+			input.append("y")
+		elif event.is_action_pressed("z"):
+			input.append("z")
+		elif event.is_action_pressed("backspace"):
+			input.remove(input.size() - 1)
+		elif event.is_action_pressed("enter"):
+			var inputString = array_to_string(input)
+			check_words(inputString)
+			input.clear()
+		elif event.is_action_pressed("escape"):
+			timer.stop()
+			currentState = gameStates.END
+			show_end_screen()
 
 func array_to_string(array):
 	var string = ""
@@ -105,6 +121,7 @@ func pick_random(array):
 func spawn_word(whichWord):
 	var newWord = Word.new(whichWord)
 	wordHandler.add_child(newWord)
+	newWord.connect("change_score", self, "change_score")
 	
 	var randomSpawn = rng.randi_range(1, 3)
 	match randomSpawn:
@@ -119,3 +136,21 @@ func check_words(input):
 	var currentWords = wordHandler.get_children()
 	for currentWord in currentWords:
 		currentWord.check_word(input)
+
+func change_score(amount):
+	score += amount
+
+func _on_MenuButton_pressed():
+	$Control/MenuButton.visible = false
+	cycle()
+	currentState = gameStates.PLAYING
+
+func show_end_screen():
+	endScreen.visible = true
+	$End_screen/Final_Score.text = str(score)
+
+func _on_Restart_Button_pressed():
+	endScreen.visible = false
+	score = 0
+	cycle()
+	currentState = gameStates.PLAYING

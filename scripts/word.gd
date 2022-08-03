@@ -6,6 +6,7 @@ var word
 onready var letter = preload("res://scenes/letter.tscn")
 var alive = true
 var rng = RandomNumberGenerator.new()
+signal change_score(amount)
 
 func _init(givenWord):
 	word = givenWord
@@ -28,7 +29,9 @@ func check_word(check):
 		alive = false
 		var letters = get_children()
 		for letter in letters:
-			var randomForce = Vector2(rng.randf_range(-50, 50), rng.randf_range(-50, 50))
+			letter.get_node("Label").self_modulate = Color(1,0,0)
+			var randomForce = Vector2(rng.randf_range(-100, 100), rng.randf_range(-400, 0))
 			letter.apply_central_impulse(randomForce)
+		emit_signal("change_score", 20)
 		yield(get_tree().create_timer(10), "timeout")
 		queue_free()
