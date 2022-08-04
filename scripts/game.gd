@@ -151,10 +151,12 @@ func show_end_screen():
 	timer.stop()
 	currentState = gameStates.END
 	endScreen.visible = true
+	inputBox.visible = false
 	$End_screen/Final_Score.text = str(score)
 
 func _on_Restart_Button_pressed():
 	endScreen.visible = false
+	inputBox.visible = true
 	score = 0
 	lives = 3
 	cycle()
