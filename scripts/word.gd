@@ -25,7 +25,7 @@ func spawn_letter(whichLetter, index):
 	l.translate(Vector2((index * 20), 0))
 
 func check_word(check):
-	if check == word:
+	if check == word and alive:
 		alive = false
 		var letters = get_children()
 		for letter in letters:

@@ -1,0 +1,53 @@
+[gd_scene load_steps=9 format=2]
+
+[ext_resource path="res://assets/alien-ufo-pack/PNG/shipGreen_manned.png" type="Texture" id=1]
+[ext_resource path="res://assets/alien-ufo-pack/PNG/shipYellow_manned.png" type="Texture" id=2]
+[ext_resource path="res://assets/alien-ufo-pack/PNG/shipPink_manned.png" type="Texture" id=3]
+[ext_resource path="res://assets/alien-ufo-pack/PNG/shipBeige_manned.png" type="Texture" id=4]
+[ext_resource path="res://assets/alien-ufo-pack/PNG/shipBlue_manned.png" type="Texture" id=5]
+[ext_resource path="res://scripts/alien.gd" type="Script" id=6]
+
+[sub_resource type="SpriteFrames" id=1]
+animations = [ {
+"frames": [ ExtResource( 4 ) ],
+"loop": true,
+"name": "beige",
+"speed": 5.0
+}, {
+"frames": [ ExtResource( 5 ) ],
+"loop": true,
+"name": "blue",
+"speed": 5.0
+}, {
+"frames": [ ExtResource( 1 ) ],
+"loop": true,
+"name": "green",
+"speed": 5.0
+}, {
+"frames": [ ExtResource( 3 ) ],
+"loop": true,
+"name": "pink",
+"speed": 5.0
+}, {
+"frames": [ ExtResource( 2 ) ],
+"loop": true,
+"name": "yellow",
+"speed": 5.0
+} ]
+
+[sub_resource type="RectangleShape2D" id=2]
+extents = Vector2( 62.2254, 62.2254 )
+
+[node name="Alien" type="Node2D"]
+script = ExtResource( 6 )
+
+[node name="Alien_Sprite" type="AnimatedSprite" parent="."]
+frames = SubResource( 1 )
+animation = "beige"
+playing = true
+
+[node name="Area2D" type="Area2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D"]
+position = Vector2( 0.275299, -0.113586 )
+shape = SubResource( 2 )

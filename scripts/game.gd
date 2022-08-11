@@ -5,32 +5,95 @@ onready var wordHandler = $Word_Handler
 onready var spawn1 = $Spawn_01
 onready var spawn2 = $Spawn_02
 onready var spawn3 = $Spawn_03
-onready var wordFile = "res://word_lists/wordlist.10000.txt"
-var wordArray = []
+onready var wordFile = "res://word_lists/wordlist.txt"
+onready var wordFile3_4 = "res://word_lists/three-four.txt"
+onready var wordFile5_6 = "res://word_lists/five-six.txt"
+onready var wordFile7 = "res://word_lists/seven-plus.txt"
+var wordArray3_4 = []
+var wordArray5_6 = []
+var wordArray7 = []
 onready var timer = $Timer
 var cycle_time = 2
 onready var inputBox = $Control/Input_Box
 var input = []
 var score = 0
 onready var scoreBox = $Control/Score_Box
-enum gameStates {START, PLAYING, END}
+enum gameStates {START, PLAYING, TRANSITION, END}
 var currentState = gameStates.START
 onready var endScreen = $End_screen
-var lives = 3
+var lives = 5
 onready var livesBox = $Control/Lives_Box
 var i_frames = false
+enum levels {ONE, TWO, THREE, FOUR, FIVE, BONUS}
+var currentLevel = levels.ONE
+onready var alienHandler = $Alien_Handler
+onready var alien = preload("res://scenes/alien.tscn")
+onready var alien_spawn = $Alien_Spawn
+var alienHealth
+signal change_direction
+signal alien_killed
 
 func _ready():
 	endScreen.visible = false
 	rng.randomize()
-	load_file(wordFile)
+	load_file(wordFile3_4, wordArray3_4)
+	load_file(wordFile5_6, wordArray5_6)
+	load_file(wordFile7, wordArray7)
 
 func cycle():
-	timer.wait_time = cycle_time
+	var newAlien = alien.instance()
+	alienHandler.add_child(newAlien)
+	newAlien.position = alien_spawn.position
+	match currentLevel:
+		levels.ONE:
+			newAlien.setColour("beige")
+		levels.TWO:
+			newAlien.setColour("green")
+		levels.THREE:
+			newAlien.setColour("pink")
+		levels.FOUR:
+			newAlien.setColour("blue")
+		levels.FIVE:
+			newAlien.setColour("yellow")
+	newAlien.initVariables()
+	alienHealth = newAlien.health
+	timer.wait_time = newAlien.wordDelay
 	timer.start()
 
 func _on_Timer_timeout():
-	var selectedWord = pick_random(wordArray)
+	var selectedWord
+#	temp implementation
+#	in future, select from a set of "moves"
+	match currentLevel:
+		levels.ONE:
+			selectedWord = pick_random(wordArray3_4)
+		levels.TWO:
+			var randomNum = rng.randi_range(1, 2)
+			match randomNum:
+				1:
+					selectedWord = pick_random(wordArray3_4)
+				2:
+					selectedWord = pick_random(wordArray5_6)
+		levels.THREE:
+			selectedWord = pick_random(wordArray5_6)
+		levels.FOUR:
+			var randomNum = rng.randi_range(1, 3)
+			match randomNum:
+				1:
+					selectedWord = pick_random(wordArray3_4)
+				2:
+					selectedWord = pick_random(wordArray5_6)
+				3:
+					selectedWord = pick_random(wordArray7)
+		levels.FIVE:
+			var randomNum = rng.randi_range(1, 3)
+			match randomNum:
+				1:
+					selectedWord = pick_random(wordArray3_4)
+				2:
+					selectedWord = pick_random(wordArray5_6)
+				3:
+					selectedWord = pick_random(wordArray7)
 	spawn_word(selectedWord)
 
 func _process(delta):
@@ -108,7 +171,7 @@ func array_to_string(array):
 		string += letter
 	return string
 
-func load_file(file):
+func load_file(file, wordArray):
 	var f = File.new()
 	f.open(file, File.READ)
 	while not f.eof_reached():
@@ -124,15 +187,16 @@ func spawn_word(whichWord):
 	var newWord = Word.new(whichWord)
 	wordHandler.add_child(newWord)
 	newWord.connect("change_score", self, "change_score")
+	newWord.position = alienHandler.get_children()[0].position - Vector2(0, -100)
 	
-	var randomSpawn = rng.randi_range(1, 3)
-	match randomSpawn:
-		1:
-			newWord.global_position = spawn1.global_position
-		2:
-			newWord.global_position = spawn2.global_position
-		3:
-			newWord.global_position = spawn3.global_position
+#	var randomSpawn = rng.randi_range(1, 3)
+#	match randomSpawn:
+#		1:
+#			newWord.global_position = spawn1.global_position
+#		2:
+#			newWord.global_position = spawn2.global_position
+#		3:
+#			newWord.global_position = spawn3.global_position
 
 func check_words(input):
 	var currentWords = wordHandler.get_children()
@@ -141,11 +205,35 @@ func check_words(input):
 
 func change_score(amount):
 	score += amount
+	alienHealth -= 1
+	if alienHealth == 0:
+		emit_signal("alien_killed")
+		level_transition()
 
 func _on_MenuButton_pressed():
 	$Control/MenuButton.visible = false
 	cycle()
 	currentState = gameStates.PLAYING
+
+func level_transition():
+	timer.stop()
+	wordHandler.get_children().clear()
+	if currentLevel == levels.FIVE:
+		show_end_screen()
+	else:
+		currentState = gameStates.TRANSITION
+		print("next level")
+		match currentLevel:
+			levels.ONE:
+				currentLevel = levels.TWO
+			levels.TWO:
+				currentLevel = levels.THREE
+			levels.THREE:
+				currentLevel = levels.FOUR
+			levels.FOUR:
+				currentLevel = levels.FIVE
+		cycle()
+		currentState = gameStates.PLAYING
 
 func show_end_screen():
 	timer.stop()
@@ -171,3 +259,10 @@ func _on_Area2D_body_entered(body):
 			show_end_screen()
 		yield(get_tree().create_timer(1), "timeout")
 		i_frames = false
+
+
+func _on_Barrier_Left_area_entered(area):
+	emit_signal("change_direction")
+
+func _on_Barrier_Right_area_entered(area):
+	emit_signal("change_direction")
